@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <title></title>
+        <style>
+            canvas {
+                top:    32px;
+                left:   32px;
+                position: absolute;
+                display:  block;
+                width:  1409px;
+                height: 736px;
+                border: 1px solid silver;
+            }
+        </style>
+        <link rel="stylesheet" href="http://code.jquery.com/ui/1.10.3/themes/smoothness/jquery-ui.css">
+        <script src="http://code.jquery.com/jquery-2.0.2.js"></script>
+        <script src="http://code.jquery.com/ui/1.10.3/jquery-ui.js"></script>
+    </head>
+    <body>
+        <a href="#" onClick="drawHeat();">play</a> || <a href="#" onclick="stopAllTimeouts();">stop</a>
+        <canvas id="heatmapContainer" width="1409px" height="736"></canvas>
+    </body>
+</html>
+
+<script>
+    var hmcvs = document.getElementById('heatmapContainer');
+    hmcvs.setAttribute("width", "1409");
+    hmcvs.setAttribute("height", "736");
+    var ctx = hmcvs.getContext('2d');
+    var imageObj = new Image();
+    imageObj.onload = function ()
+    {
+        ctx.drawImage(imageObj, 0, 0);
+    };
+    imageObj.src = '';
+
+    function drawHeat()
+    {
+        console.log("starting draw heat");
+        var xid = Date.parse(new Date());
+        var canvas = document.createElement('canvas');
+        canvas.setAttribute("id", "canvas" + xid);
+        canvas.setAttribute("width", "1409");
+        canvas.setAttribute("height", "736");
+        var ctx = canvas.getContext('2d');
+        document.body.appendChild(canvas);
+        canvas.style.display = "block";
+        console.log("... getting data");
+
+        var date0 = new Date();
+        var date1 = new Date(date0.valueOf() + date0.getTimezoneOffset() * 60000);
+        var yy = date1.getFullYear();
+        var mo = date1.getMonth() + 1;
+        var dd = date1.getDate();
+        var hh = date1.getHours();
+        var mi = date1.getMinutes();
+        var ss = date1.getSeconds();
+        var mi0 = parseInt(mi) - 1;
+        
+        var dataURL = "http://couch0.cloudapp.net/tracking/_design/_views/_view/date_coord?startkey=[" + yy + "," + mo + "," + dd + "," + hh + "," + mi0 + "," + ss + "]&endkey=[" + yy + "," + mo + "," + dd + "," + hh + "," + mi + "," + ss + "]";
+        console.log(dataURL);
+
+        $.getJSON(dataURL, function (devData)
+        {
+            ctx.globalAlpha = 0.6;
+            console.log(devData["rows"].length);
+            for (var i = 0; i < devData["rows"].length; i++)
+            {
+                x = Math.floor(devData["rows"][i]["value"]["y"]);
+                y = Math.floor(devData["rows"][i]["value"]["x"]);
+
+                x = x * 1.5;
+                y = y * 2;
+
+                //console.log("...drawing point");
+
+                ctx.beginPath();
+                ctx.rect(x, y, 8, 8);
+                ctx.fillStyle = "#" + devData["rows"][i]["value"]["hex"];
+                ctx.fill();
+                ctx.closePath();
+            }
+
+            var n = date1.toTimeString();
+
+            console.log("... drawing time");
+            ctx.fillStyle = "black";
+            ctx.fillRect(0, 1, 800, 75);
+            ctx.fillStyle = "white";
+            ctx.font = "16px Arial";
+            ctx.fillText(date1 + " (total:" + i + ")", 10, 30);
+            console.log(n, i);
+
+            setTimeout(function () { $('#canvas' + xid).remove(); }, 5000);
+            setTimeout(function () { drawHeat(); }, 1000);
+
+            console.log("end draw heat");
+        }
+        );
+    }
+    function stopAllTimeouts()
+    {
+        var id = window.setTimeout(null, 0);
+        while (id--)
+        {
+            window.clearTimeout(id);
+        }
+    }
+</script>
+<!-- http://markfennell.azurewebsites.net/heat/marauderMap_test.php -->

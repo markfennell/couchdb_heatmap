@@ -1,5 +1,7 @@
 # couchdb_heatmap
+
 Sample code for CouchDB heat map
+
 http://mark.the-fennells.org/?p=823
 
 The following outlines a series of posts designed to walk readers through building and 
@@ -8,5 +10,7 @@ on an OpenSUSE VM in the Azure cloud. This gitHub repo contains the files for th
 map code discussed in part 5 of the blog series.
 
 Uses heatmap.js v2.0.0 JavaScript Heatmap Library Copyright 2008-2014 Patrick Wied
+
 Uses Leaflet
+
 Uses SimpleHeat https://github.com/mourner/simpleheat

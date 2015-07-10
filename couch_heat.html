@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset=utf-8 />
+    <title>Custom Heat Map Test</title>
+    <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+    <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.css" />
+
+    <style>
+        html,
+        body,
+        #map {
+            min-height: 100%;
+            width: 100%;
+            margin: 0;
+            padding: 0;
+            position: absolute;
+        }
+    </style>
+</head>
+
+<body>
+
+    <script src="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.js"></script>
+    <script src='heatmap.js'></script>
+    <script src='leaflet-heatmap.js'></script>
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/d3/3.4.11/d3.min.js"></script>
+
+    <script src="leaflet-div-heatmap.js"></script>
+
+    <script src="leaflet-heat.js"></script>
+
+    <div id='map'></div>
+
+    <script>
+        //heatmap.js config
+        var cfg = {
+            // radius should be small ONLY if scaleRadius is true (or small radius is intended)
+            // if scaleRadius is false it will be the constant radius used in pixels
+            "radius": 10,
+            "maxOpacity": .8,
+            // scales the radius based on map zoom
+            "scaleRadius": true,
+            // if set to false the heatmap uses the global maximum for colorization
+            // if activated: uses the data maximum within the current map boundaries
+            //   (there will always be a red spot with useLocalExtremas true)
+            "useLocalExtrema": false,
+            // which field name in your data represents the latitude - default "lat"
+            latField: 'x',
+            // which field name in your data represents the longitude - default "lng"
+            lngField: 'y',
+            // which field name in your data represents the data value - default "value"
+            valueField: 'Value'
+        };
+        //var heatmapLayer = new HeatmapOverlay(cfg);
+
+        var baseLayer = L.tileLayer(
+            '', {
+                minZoom: 1,
+                maxZoom: 3,
+                attribution: 'Demo Code by Mark Fennell',
+                tms: true,
+                continuousWorld: true,
+                noWrap: true,
+                crs: L.CRS.Simple
+            }
+        );
+
+        var map = new L.Map('map', {
+            center: new L.LatLng(0, 0),
+            zoom: 2,
+            layers: [baseLayer] //layers: [baseLayer, heatmapLayer]
+        });
+
+        map.panTo(new L.LatLng(55, 10));
+
+        //console.log(map.getBounds());
+
+        //heatmapLayer.setData(testData);
+        
+		var testData3 = [];
+
+
+        var dataURL = "http://couch0.cloudapp.net/tracking/_design/_views/_view/date_coord?startkey=[2015,7,9,15,45,7]&endkey=[2015,7,9,16,0,0]&stale=update_after";
+        
+        
+        $.getJSON(dataURL, function (data)
+        {
+				var latlngs = [];
+				var heat = L.heatLayer(latlngs, {radius: 6}).addTo(map);
+
+            for (i = 0; i < data["rows"].length; i++)
+            {
+                    var newx = data["rows"][i]["value"]["x"];
+					newx = newx * 2.92;
+					var newy = data["rows"][i]["value"]["y"];
+					newy = newy * 4.38;
+					var latlng2 = map.unproject([newy, newx], map.getMaxZoom());
+					var d = L.latLng(latlng2.lat, latlng2.lng, 1);
+					//latlngs.push(data);
+					testData3.push(d);
+					heat.addLatLng(d);
+
+            }
+        });
+
+    </script>
+
+</body>
+</html>
